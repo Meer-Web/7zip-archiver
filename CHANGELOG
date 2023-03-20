@@ -1,2 +1,9 @@
+## 2.2.0
+- Improved logging
+- Added extra confirmation checks on file existance or exiting if issues are found
+
 ## 2.1.0
+- Added log to textfile
+
+## 2.0.4
 - Initial release
