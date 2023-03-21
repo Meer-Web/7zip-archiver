@@ -1,5 +1,5 @@
 # 7zip_to_netapp_v2.ps1
-# Author: F. Bischof (frank.bischof@solvinity.com)
+# Author: F. Bischof (frank@meer-web.nl)
 # Version 2.2.0
 
 # Set global vars
