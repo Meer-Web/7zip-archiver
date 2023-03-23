@@ -1,13 +1,12 @@
 # 7zip_to_netapp_v2.ps1
 # Author: F. Bischof (frank@meer-web.nl)
-# Version 2.2.0
+# Version 2.4.0
 
 # Set global vars
 $TIMESTAMP = Get-Date -Format "yyyyMMddHHmm"
 $TARGET_FILENAME = "${TIMESTAMP}-archive.7z"
 $CSV = "C:\Scripts\compress and move\dfs04zip.csv"
 $LOGFILE = "C:\Scripts\compress and move\$TIMESTAMP.log"
-write-host "===========================STARTING ARCHIVE==========================="
 
 # Writelog function
 if (!(test-path $LOGFILE)) {
@@ -20,7 +19,7 @@ function WRITELOG {
     Add-content $LOGFILE -value $LOGMESSAGE
     Write-Host "${LOGMESSAGE}"
 }
-WRITELOG "Archiving started"
+WRITELOG "=========================== Archiving started ==========================="
 
 # Check if CSV file exists
 if (test-path $CSV) {
@@ -31,6 +30,11 @@ if (test-path $CSV) {
     Write-Output "$CSV does not exists!"
     exit
 }
+
+# Rebuild CSV file to be valid
+(Get-Content $CSVFILE | Select-Object -Skip 1) | Set-Content $CSVFILE ## Remove first line
+"FROM,TO`n" + (Get-Content $CSVFILE -Raw) | Set-Content $CSVFILE ## Add FROM,TO to CSV file
+(Get-Content $CSVFILE) | Where-Object {$_.trim() -ne "" } | Set-Content $CSVFILE ## Remove empty lines
 
 # Create alias
 set-alias 7z "$env:ProgramFiles\7-Zip\7z.exe"
@@ -53,7 +57,15 @@ WRITELOG "Looping through CSV file"
 foreach ($SOURCE_ENTRY in $CSVFILE) {
     $COUNTER++
     $SOURCE = ${SOURCE_ENTRY}.FROM
+    if ($null -eq $SOURCE) {
+        WRITELOG "SOURCE variable is empty! Please check the CSV file. Exiting..."
+        exit
+    }
     $TARGET = ${SOURCE_ENTRY}.TO
+    if ($null -eq $TARGET) {
+        WRITELOG "TARGET variable is empty! Please check the CSV file. Exiting..."
+        exit
+    }
     WRITELOG "Archiving: $COUNTER - $SOURCE"
     Write-Output "Archiving $SOURCE"
 
@@ -87,7 +99,7 @@ foreach ($SOURCE_ENTRY in $CSVFILE) {
 
     # Start archiving
     WRITELOG "7ZIP $SOURCE"
-    7z a -mx3 -t7z -r "$TARGET\$TARGET_FILENAME" "$SOURCE\*"
+    7z a -mx3 -t7z -r "${TARGET}\${TARGET_FILENAME}" "$SOURCE\*"
 
     # Validate number of files in archive and DFS
     WRITELOG "Compare the number of files in DFS and archive"
@@ -99,6 +111,10 @@ foreach ($SOURCE_ENTRY in $CSVFILE) {
     
     ForEach-Object {
         $7ZIP_FILECOUNT = [Int] $_.Matches[0].Groups[1].Value
+        if ($7ZIP_FILECOUNT -eq $null) { 
+            # Ignore counter if null
+        }
+
     }
     
     ## DFS
@@ -114,7 +130,7 @@ foreach ($SOURCE_ENTRY in $CSVFILE) {
         Write-Output "Cleaning up $SOURCE"
         robocopy /MIR $EMPTY_FOLDER $SOURCE
         remove-item -Force -Recurse $SOURCE
-        WRITELOG "Source has been archived!"
+        WRITELOG "Source has been archived to $TARGET!"
         if (!(test-path $TEMPFOLDER_DONE)){
             WRITELOG "Renaming stage folder to $TEMPFOLDER_DONE"
             Rename-Item -Path $TEMPFOLDER_RUNNING -NewName $TEMPFOLDER_DONE
@@ -128,4 +144,4 @@ foreach ($SOURCE_ENTRY in $CSVFILE) {
         }
     }
 }
-write-host "===========================ARCHIVE ENDED==========================="
+WRITELOG "=========================== Archiving ended ==========================="

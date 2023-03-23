@@ -1,3 +1,10 @@
+## 2.4.0
+- Added extra checks if FROM and TO are properly set
+
+## 2.3.0
+- Added CSV check for consistancy
+- Added target to logging
+
 ## 2.2.0
 - Improved logging
 - Added extra confirmation checks on file existance or exiting if issues are found
