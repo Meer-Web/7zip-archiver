@@ -1,12 +1,14 @@
 # 7zip_to_netapp_v2.ps1
 # Author: F. Bischof (frank@meer-web.nl)
-# Version 2.4.0
+# Version 2.5.0
 
 # Set global vars
+$CSV = "C:\MyCSVFile.csv"
+$LOGFILE = "C:\MyCSVFile.$TIMESTAMP.log"
+
+# Set script vars
 $TIMESTAMP = Get-Date -Format "yyyyMMddHHmm"
 $TARGET_FILENAME = "${TIMESTAMP}-archive.7z"
-$CSV = "C:\Scripts\compress and move\dfs04zip.csv"
-$LOGFILE = "C:\Scripts\compress and move\$TIMESTAMP.log"
 
 # Writelog function
 if (!(test-path $LOGFILE)) {
@@ -24,7 +26,7 @@ WRITELOG "=========================== Archiving started ========================
 # Check if CSV file exists
 if (test-path $CSV) {
     WRITELOG "Loading CSV file $CSV"
-    $CSVFILE = import-csv -Path 'C:\Scripts\compress and move\dfs04zip.csv'
+    $CSVFILE = import-csv -Path "${CSV}"
 } else {
     WRITELOG "CSV file not found! ($CSV)"
     Write-Output "$CSV does not exists!"
