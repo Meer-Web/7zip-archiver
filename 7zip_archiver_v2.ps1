@@ -1,14 +1,12 @@
 # 7zip_to_netapp_v2.ps1
-# Author: F. Bischof (frank@meer-web.nl)
-# Version 2.5.0
+# Author: F. Bischof (info@meer-web.nl)
+# Version 2.6.0
 
 # Set global vars
-$CSV = "C:\MyCSVFile.csv"
-$LOGFILE = "C:\MyCSVFile.$TIMESTAMP.log"
-
-# Set script vars
 $TIMESTAMP = Get-Date -Format "yyyyMMddHHmm"
 $TARGET_FILENAME = "${TIMESTAMP}-archive.7z"
+$CSVFILE = "C:\Scripts\movethis.csv"
+$LOGFILE = "C:\Scripts\$TIMESTAMP.log"
 
 # Writelog function
 if (!(test-path $LOGFILE)) {
@@ -24,12 +22,11 @@ function WRITELOG {
 WRITELOG "=========================== Archiving started ==========================="
 
 # Check if CSV file exists
-if (test-path $CSV) {
-    WRITELOG "Loading CSV file $CSV"
-    $CSVFILE = import-csv -Path "${CSV}"
+if (test-path $CSVFILE) {
+    WRITELOG "Loading CSV file $CSVFILE"
 } else {
-    WRITELOG "CSV file not found! ($CSV)"
-    Write-Output "$CSV does not exists!"
+    WRITELOG "CSV file not found! ($CSVFILE)"
+    Write-Output "$CSVFILE does not exists!"
     exit
 }
 
@@ -37,6 +34,7 @@ if (test-path $CSV) {
 (Get-Content $CSVFILE | Select-Object -Skip 1) | Set-Content $CSVFILE ## Remove first line
 "FROM,TO`n" + (Get-Content $CSVFILE -Raw) | Set-Content $CSVFILE ## Add FROM,TO to CSV file
 (Get-Content $CSVFILE) | Where-Object {$_.trim() -ne "" } | Set-Content $CSVFILE ## Remove empty lines
+$CSVFILE = import-csv -Path ${CSVFILE}
 
 # Create alias
 set-alias 7z "$env:ProgramFiles\7-Zip\7z.exe"
