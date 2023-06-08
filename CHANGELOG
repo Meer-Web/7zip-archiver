@@ -1,3 +1,6 @@
+## 3.0.1
+- Added a $MAX_FOLDER_SIZE where if reached it switches to robocopy instead.
+
 ## 2.6.0
 - Bugfixed CSVFile modification
 
